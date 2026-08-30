@@ -71,6 +71,7 @@ ThunderScopeOscilloscope::ThunderScopeOscilloscope(SCPITransport* transport)
 	, m_adcMode(MODE_8BIT)
 	, m_lastSeq(0)
 	, m_dropUntilSeq(0)
+	, m_autoStarted(false)
 {
 	m_analogChannelCount = 4;
 
@@ -633,6 +634,7 @@ void ThunderScopeOscilloscope::PushPendingWaveformsIfReady()
 void ThunderScopeOscilloscope::Start()
 {
 	m_triggerArmed = true; //FIXME
+	m_autoStarted = false;
 
 	m_transport->SendCommandQueued("NORMAL");
 	m_transport->SendCommandQueued("RUN");
@@ -643,9 +645,27 @@ void ThunderScopeOscilloscope::Start()
 	ResetPerCaptureDiagnostics();
 }
 
+void ThunderScopeOscilloscope::StartAuto()
+{
+	m_triggerArmed = true;
+
+	if(!m_autoStarted)
+	{
+		m_transport->SendCommandQueued("AUTO");
+		m_transport->SendCommandQueued("RUN");
+		m_autoStarted = true;
+	}
+
+	m_triggerArmed = true;
+	m_triggerOneShot = false;
+
+	ResetPerCaptureDiagnostics();
+}
+
 void ThunderScopeOscilloscope::Stop()
 {
 	RemoteBridgeOscilloscope::Stop();
+	m_autoStarted = false;
 
 	//Wait for any previous in-progress waveforms to finish processing
 	{
@@ -662,12 +682,16 @@ void ThunderScopeOscilloscope::Stop()
 
 void ThunderScopeOscilloscope::StartSingleTrigger()
 {
+	m_autoStarted = false;
 	RemoteBridgeOscilloscope::StartSingleTrigger();
 	ResetPerCaptureDiagnostics();
 }
 
 void ThunderScopeOscilloscope::ForceTrigger()
 {
+	if(m_autoStarted)
+		return;
+
 	m_transport->SendCommandQueued("SINGLE");
 	m_transport->SendCommandQueued("FORCE");
 

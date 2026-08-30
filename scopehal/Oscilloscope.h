@@ -504,6 +504,14 @@ public:
 	virtual void Start() =0;
 
 	/**
+		@brief Starts the instrument in automatic trigger mode.
+	 */
+	virtual void StartAuto()
+	{
+		Start();
+	}
+
+	/**
 		@brief Arms the trigger for a single acquistion.
 	 */
 	virtual void StartSingleTrigger() =0;

@@ -83,6 +83,7 @@ public:
 
 	// Captures
 	virtual void Start() override;
+	virtual void StartAuto() override;
 	virtual void StartSingleTrigger() override;
 	virtual void Stop() override;
 	virtual void ForceTrigger() override;
@@ -178,6 +179,9 @@ protected:
 
 	///@brief Sequence number to drop until (if we get stale data after stopping the trigger)
 	uint32_t m_dropUntilSeq;
+
+	///@brief Whether AUTO has already been sent for the current run
+	bool m_autoStarted;
 
 	///@brief Mutex for m_wipWaveforms
 	std::recursive_mutex m_wipWaveformMutex;
